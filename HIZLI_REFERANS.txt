@@ -1,0 +1,134 @@
+╔════════════════════════════════════════════════════════════════╗
+║     🎮 DEDEKTIF KARAKTERİ - HIZLI KURULUM REFERANSI 🎮         ║
+╚════════════════════════════════════════════════════════════════╝
+
+📋 COMPONENTS CHECKLIST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+☐ ANIMATOR
+  Controller:        DedektifAnimator.controller
+  Avatar:            822920de5c17b3ab8cecf473978e6343@avatar
+
+☐ RIGIDBODY
+  Mass:              1
+  Use Gravity:       ✓ CHECKED
+  Is Kinematic:      ☐ UNCHECKED
+  Constraints:       X, Y, Z Freeze Rotation
+
+☐ CAPSULE COLLIDER (Vücut)
+  Center:            (0, 1, 0)
+  Radius:            0.5
+  Height:            2
+  Is Trigger:        ☐
+
+☐ BOX COLLIDER (Ground Detection)
+  Center:            (0, -0.8, 0)
+  Size:              (1, 0.2, 1)
+  Is Trigger:        ✓
+  Tag:               Ground
+
+☐ CHARACTER MOVEMENT SCRIPT
+  Walk Speed:        3
+  Run Speed:         6
+  Jump Force:        5
+  Ground Drag:       5
+  Air Drag:          0.5
+  Ray Distance:      0.5
+
+
+🎮 KONTROL TUŞLARI
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[W]               → 🚶 YÜRÜME        (Speed: 0.5)
+[W] + [SHIFT]     → 🏃 KOŞMA        (Speed: 1.0)
+[SPACE]           → 🦘 ZIPLAMA       (Trigger)
+[Tuş Bırak]       → 🛑 DURSUN       (Idle)
+
+
+📊 ANIMATOR STATES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+IDLE        ←→  WALK  ←→  RUN
+ ↑                              ↑
+ └──────────── JUMP ────────────┘
+
+
+📁 DOSYA YERLERİ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Script:            Assets/Scripts/CharacterMovement.cs
+Animator:          Assets/Animators/DedektifAnimator.controller
+Model:             Assets/Kaarakterler/Dedektif/
+                   822920de5c17b3ab8cecf473978e6343.obj
+Animasyonlar:      Assets/Kaarakterler/Dedektif/
+                   ├─ anakarakter@Walking.fbx
+                   ├─ anakarakter@Running.fbx
+                   └─ anakarakter@Jumping.fbx
+
+
+⚡ HIZLI SORUN ÇÖZÜMLERİ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ Karakter hareket etmiyor
+   → Rigidbody Is Kinematic ☐ mı? (Unchecked olmalı)
+   → Script hata vermiyor mu? Console kontrol et
+   → Constraints Freeze Rotation ✓ mı?
+
+❌ Animasyon değişmiyor
+   → Controller assign edildi mi?
+   → Parameters doğru adlarda mı? (Speed, IsJumping, IsGrounded)
+   → Animasyon dosyaları Motion'a assign edildi mi?
+
+❌ Zıplama sonsuz devam ediyor
+   → Ray Distance çok mü küçük? (0.5 olmalı)
+   → Ground Layer ayarı doğru mu?
+   → Box Collider Is Trigger ✓ mı?
+
+❌ Karakter yerlere yapışıyor
+   → Drag değerini azalt (5 → 2)
+   → Collider boyutlarını kontrol et
+   → Physics timestep kontrol et
+
+❌ Karakter dönüyor
+   → Freeze Rotation X, Y, Z ✓ mı?
+   → Script yönlendirmesi mi yapıyor? Kod kontrol et
+
+
+🔧 PARAMETRELER (Inspector'dan Ayarlanabilir)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Hız Ayarı:
+  walkSpeed:  3  →  Yürüme hızını değiştir (1-10)
+  runSpeed:   6  →  Koşma hızını değiştir (1-15)
+
+Zıplama Ayarı:
+  jumpForce:  5  →  Zıplama gücünü değiştir (1-20)
+
+Hareket Pürüzlülüğü:
+  groundDrag: 5  →  Yer'de davranış (0-20)
+  airDrag:    0.5 → Havada davranış (0-5)
+
+Tespit:
+  rayDistance: 0.5 → Yer algılama mesafesi (0.1-1)
+
+
+✨ YENİ ÖZELLİKLER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ Scene view'da debug ray gösterilir (yeşil/kırmızı)
+✓ Console'da kurulum doğrulama mesajları
+✓ Layer mask desteği (ileride geliştirilecek)
+✓ Smooth transition (sürükü animasyonlar)
+
+
+📞 DESTEK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Detaylı rehber: DETAYLI_KURULUM.md
+Tamamlanmış: DEDEKTIF_SETUP_DETAYLI.md
+Bu dosya: HIZLI_REFERANS.txt
+
+
+╔════════════════════════════════════════════════════════════════╗
+║                  Hazır mısın? Let's Go! 🚀                    ║
+╚════════════════════════════════════════════════════════════════╝
