@@ -1,65 +1,68 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Collections; // Coroutine için gerekli
 
 public class MainMenuManager : MonoBehaviour
 {
     [Header("Sahne Ayarları")]
-    public string gameSceneName = "SampleScene"; // Oyunun ana sahnesinin adı
-    public GameObject optionsPanel; // Ayarlar penceresi (Panel)
+    public string gameSceneName = "GameScene";
+    public GameObject optionsPanel;
 
-    // Kayıt anahtarı (Veritabanındaki değişken ismi gibi düşün)
+    [Header("Fade Ayarları")]
+    public CanvasGroup fadeCanvasGroup; // Siyah panelin CanvasGroup'u
+    public float fadeDuration = 1.0f; // Kararma süresi
+
     private const string SAVE_KEY = "HasSavedGame"; 
 
-    // 1. YENİ OYUN BUTONU
+    // --- YENİ OYUN ---
     public void NewGame()
     {
-        // 1 = Hikayeyi Göster demektir
+        // Önce verileri ayarla
         PlayerPrefs.SetInt("ShowIntroStory", 1); 
-        
-        // Yeni oyun olduğu için kayıt var mı bilgisini oluştur
-        PlayerPrefs.SetInt("HasSavedGame", 1);
+        PlayerPrefs.SetInt(SAVE_KEY, 1);
         PlayerPrefs.Save();
 
-        SceneManager.LoadScene(gameSceneName);
+        // Direkt yüklemek yerine Coroutine başlat
+        StartCoroutine(FadeAndLoadScene());
     }
 
+    // --- DEVAM ET ---
     public void ContinueGame()
     {
-        if (PlayerPrefs.HasKey("HasSavedGame"))
+        if (PlayerPrefs.HasKey(SAVE_KEY))
         {
-            // Devam ettiği için hikayeyi GÖSTERME (0)
-            PlayerPrefs.SetInt("ShowIntroStory", 0); 
-            
-            SceneManager.LoadScene(gameSceneName);
+            PlayerPrefs.SetInt("ShowIntroStory", 0);
+            StartCoroutine(FadeAndLoadScene()); // Fade ile geçiş
         }
         else
         {
-            // Kayıt yoksa yeni oyun gibi davran
-            NewGame();
+            NewGame(); // Kayıt yoksa NewGame fonksiyonuna gider
         }
     }
 
-    // 3. AYARLAR BUTONU
-    public void OpenOptions()
+    // --- FADE OUT VE SAHNE YÜKLEME ---
+    IEnumerator FadeAndLoadScene()
     {
-        if (optionsPanel != null)
+        // 1. Fade Panelinin tıklamaları engellemesini sağla (Blocks Raycasts)
+        fadeCanvasGroup.blocksRaycasts = true;
+
+        // 2. Alpha değerini 0'dan 1'e (Siyah) çıkar
+        float timer = 0f;
+        while (timer < fadeDuration)
         {
-            optionsPanel.SetActive(true); // Paneli aç
+            timer += Time.deltaTime;
+            fadeCanvasGroup.alpha = timer / fadeDuration;
+            yield return null; // Bir sonraki kareyi bekle
         }
+
+        fadeCanvasGroup.alpha = 1f; // Tam siyah olduğundan emin ol
+
+        // 3. Sahneyi Yükle
+        SceneManager.LoadScene(gameSceneName);
     }
 
-    public void CloseOptions() // Ayarlar panelindeki 'Geri' butonu için
-    {
-        if (optionsPanel != null)
-        {
-            optionsPanel.SetActive(false); // Paneli kapat
-        }
-    }
-
-    // 4. ÇIKIŞ BUTONU
-    public void QuitGame()
-    {
-        Debug.Log("Oyundan Çıkıldı!");
-        Application.Quit();
-    }
+    // --- DİĞER FONKSİYONLAR (Aynı kalacak) ---
+    public void OpenOptions() { optionsPanel.SetActive(true); }
+    public void CloseOptions() { optionsPanel.SetActive(false); }
+    public void QuitGame() { Application.Quit(); }
 }
