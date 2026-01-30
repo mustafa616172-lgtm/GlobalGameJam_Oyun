@@ -78,13 +78,41 @@ public class CharacterMovement : MonoBehaviour
         isMoving = false;
         isRunning = false;
 
-        // W tuşu - Yürüme / Koşma
+        // İleri / Geri / Sağ / Sol hareketi
+        float moveX = 0f;
+        float moveZ = 0f;
+        
+        // W tuşu - İleri
         if (Input.GetKey(KeyCode.W))
         {
-            moveDirection = transform.forward;
+            moveZ = 1f;
+        }
+        
+        // S tuşu - Geri
+        if (Input.GetKey(KeyCode.S))
+        {
+            moveZ = -1f;
+        }
+        
+        // D tuşu - Sağ
+        if (Input.GetKey(KeyCode.D))
+        {
+            moveX = 1f;
+        }
+        
+        // A tuşu - Sol
+        if (Input.GetKey(KeyCode.A))
+        {
+            moveX = -1f;
+        }
+        
+        // Hareket yönü hesapla
+        if (moveX != 0f || moveZ != 0f)
+        {
+            moveDirection = (transform.forward * moveZ + transform.right * moveX).normalized;
             isMoving = true;
             
-            // W + Left Shift - Koşma
+            // Shift - Koşma
             if (Input.GetKey(KeyCode.LeftShift))
             {
                 currentSpeed = runSpeed;
@@ -92,7 +120,6 @@ public class CharacterMovement : MonoBehaviour
             }
             else
             {
-                // Sadece W - Yürüme
                 currentSpeed = walkSpeed;
                 isRunning = false;
             }
