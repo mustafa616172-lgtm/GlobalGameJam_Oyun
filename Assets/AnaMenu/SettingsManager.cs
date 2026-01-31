@@ -5,168 +5,145 @@ using UnityEngine.Audio;
 
 public class SettingsManager : MonoBehaviour
 {
+    // HASSASİYET GLOBAL ERİŞİM (Karakterin buradan okuyacak)
+    public static float GlobalSensitivity = 1.0f;
+
     [Header("UI Referansları")]
-    public GameObject settingsPanel;      // Ayarlar menüsünün ana paneli (Aç/Kapa için)
-    public Button saveButton;             // Kaydet butonu (Rengi değişecek)
+    public GameObject settingsPanel;      // Ayarlar penceresi
+    public Button saveButton;             // Kaydet butonu
     public Button backButton;             // Geri butonu
-    
-    [Header("Ayarlar UI")]
+
+    [Header("Ayarlar UI Elemanları")]
     public Slider volumeSlider;
     public Slider sensitivitySlider;
-    public TMP_Dropdown graphicsDropdown;
+    public TMP_Dropdown graphicsDropdown; // Sadece Düşük-Orta-Yüksek seçenekli
 
     [Header("Sistem Referansları")]
-    public AudioMixer mainMixer;          // Ses kontrolü için
-    
-    [Header("Renk Ayarları")]
-    public Color unsavedColor = Color.red;   // Kaydedilmemiş renk (Kırmızı)
-    public Color savedColor = Color.green;   // Kaydedilmiş renk (Yeşil)
+    public AudioMixer mainMixer;          // Ses kontrolü (MusicVol parametresi)
 
-    // --- DEĞİŞKENLER (Hafıza) ---
-    // Oyuncu menüyü açtığında var olan gerçek değerleri burada tutacağız.
-    // Eğer kaydetmeden çıkarsa, bu değerlere geri döneceğiz.
+    [Header("Renk Ayarları")]
+    public Color unsavedColor = Color.red;   // Kaydedilmedi uyarısı (Kırmızı)
+    public Color savedColor = Color.green;   // Kaydedildi (Yeşil)
+
+    // --- HAFIZA (GERİ ALMA İÇİN) ---
     private float _startVolume;
     private float _startSensitivity;
-    private int _startQuality;
+    private int _startQuality; // 0: Düşük, 1: Orta, 2: Yüksek
 
-    private bool _isDirty = false; // Değişiklik yapıldı mı?
+    private bool _isDirty = false; // Değişiklik yapıldı mı kontrolü
 
-    // PlayerPrefs Anahtarları
+    // Kayıt Anahtarları
     private const string KEY_VOLUME = "Volume";
     private const string KEY_SENSITIVITY = "Sensitivity";
     private const string KEY_QUALITY = "Quality";
 
     void Start()
     {
-        // Butonlara tıklama olaylarını bağla
+        // 1. Butonları Bağla
         saveButton.onClick.AddListener(SaveSettings);
         backButton.onClick.AddListener(OnBackButtonClicked);
 
-        // Değerler değiştiğinde çalışacak fonksiyonları bağla
+        // 2. Değişiklikleri Dinle (Anlık önizleme için)
         volumeSlider.onValueChanged.AddListener(delegate { OnValueChanged(); });
         sensitivitySlider.onValueChanged.AddListener(delegate { OnValueChanged(); });
         graphicsDropdown.onValueChanged.AddListener(delegate { OnValueChanged(); });
 
-        // Oyunu başlatırken veya menü açılırken ayarları yükle
+        // 3. Ayarları Yükle
         LoadCurrentSettings();
     }
 
-    // Menü her açıldığında (SetActive true olduğunda) çalışır
     private void OnEnable()
     {
+        // Menü her açıldığında verileri tazele
         LoadCurrentSettings();
     }
 
-    // 1. MEVCUT AYARLARI YÜKLE VE HAFIZAYA AL
+    // --- MEVCUT AYARLARI YÜKLE ---
     public void LoadCurrentSettings()
     {
-        // A) PlayerPrefs'ten verileri çek (Yoksa varsayılanları al)
+        // Verileri çek (Varsayılan değerler parantez içinde)
         _startVolume = PlayerPrefs.GetFloat(KEY_VOLUME, 0.5f);
-        _startSensitivity = PlayerPrefs.GetFloat(KEY_SENSITIVITY, 1.0f);
-        _startQuality = PlayerPrefs.GetInt(KEY_QUALITY, 2); // Medium
+        _startSensitivity = PlayerPrefs.GetFloat(KEY_SENSITIVITY, 2.0f);
+        _startQuality = PlayerPrefs.GetInt(KEY_QUALITY, 2); // Varsayılan: Yüksek (2)
 
-        // B) UI Elemanlarını güncelle
+        // UI elemanlarını güncelle
         volumeSlider.value = _startVolume;
         sensitivitySlider.value = _startSensitivity;
         graphicsDropdown.value = _startQuality;
 
-        // C) Arka planda sistemi güncelle (Ses, Grafik vb.)
+        // Arka planda oyuna uygula
         ApplySettings(_startVolume, _startSensitivity, _startQuality);
 
-        // D) Buton rengini Yeşil yap (Henüz değişiklik yok)
         UpdateSaveButtonColor(true);
         _isDirty = false;
     }
 
-    // 2. HERHANGİ BİR AYAR DEĞİŞTİĞİNDE
+    // --- BİR ŞEY DEĞİŞİNCE ÇALIŞIR ---
     public void OnValueChanged()
     {
-        // Anlık olarak sesi veya grafiği değiştirip göstermek istersen burayı açabilirsin.
-        // Ama "Kaydetmezse iptal olsun" dediğin için sadece UI değişiyor, sistem henüz değişmiyor.
-        // İstersen "Preview" (Önizleme) için ApplySettings'i burada çağırabilirsin ama 
-        // Back tuşunda RevertSettings çağırmak şartıyla. 
-        
-        // Biz şimdilik kullanıcıya değişikliği göstermek için "Preview" yapalım:
+        // Anlık olarak uygula (Preview) ama kaydetme
         ApplySettings(volumeSlider.value, sensitivitySlider.value, graphicsDropdown.value);
-
-        // Kaydet butonu Kırmızı olsun
-        UpdateSaveButtonColor(false);
+        
+        UpdateSaveButtonColor(false); // Buton Kırmızı olsun
         _isDirty = true;
     }
 
-    // 3. KAYDET BUTONUNA BASINCA
+    // --- KAYDET BUTONU ---
     public void SaveSettings()
     {
-        // Verileri PlayerPrefs'e yaz (Diske kaydet)
+        // Diske yaz
         PlayerPrefs.SetFloat(KEY_VOLUME, volumeSlider.value);
         PlayerPrefs.SetFloat(KEY_SENSITIVITY, sensitivitySlider.value);
         PlayerPrefs.SetInt(KEY_QUALITY, graphicsDropdown.value);
         PlayerPrefs.Save();
 
-        // Başlangıç noktalarımızı (Restore noktalarını) güncelle
+        // Geri dönüş noktalarımızı güncelle (Artık yeni başlangıç noktası burası)
         _startVolume = volumeSlider.value;
         _startSensitivity = sensitivitySlider.value;
         _startQuality = graphicsDropdown.value;
 
-        // Butonu Yeşil yap
-        UpdateSaveButtonColor(true);
+        UpdateSaveButtonColor(true); // Buton Yeşil olsun
         _isDirty = false;
-
+        
         Debug.Log("Ayarlar Kaydedildi!");
     }
 
-    // 4. GERİ BUTONUNA BASINCA
+    // --- GERİ BUTONU (REVERT İŞLEMİ) ---
     public void OnBackButtonClicked()
     {
         if (_isDirty)
         {
-            // Eğer değişiklik yapıldı ama KAYDEDİLMEDİYSE
-            // Eski (Başlangıç) ayarlarına geri dön (REVERT)
+            // Eğer değişiklik yapıldı ama KAYDEDİLMEDİYSE -> İPTAL ET (Eski ayarlara dön)
             ApplySettings(_startVolume, _startSensitivity, _startQuality);
             
-            // UI'ı da eski haline getir (Bir sonraki açılışta düzgün görünsün)
+            // UI'ı da eski haline getir ki sonraki açılışta doğru gözüksün
             volumeSlider.value = _startVolume;
             sensitivitySlider.value = _startSensitivity;
             graphicsDropdown.value = _startQuality;
 
-            Debug.Log("Değişiklikler kaydedilmediği için geri alındı.");
+            Debug.Log("Değişiklikler kaydedilmedi, eski ayarlara dönüldü.");
         }
 
         // Paneli kapat
         settingsPanel.SetActive(false);
-        
-        // Oyun içindeysek Time.timeScale = 1 yapman gerekebilir (Pause'dan çıkış için)
     }
 
-    // --- YARDIMCI FONKSİYONLAR ---
-
-    // Ayarları motora uygulayan fonksiyon
+    // --- AYARLARI UYGULAMA MOTORU ---
     private void ApplySettings(float vol, float sens, int quality)
-{
-    // 1. Ses Ayarı (Aynı kalıyor)
-    float dbValue = Mathf.Log10(Mathf.Max(vol, 0.0001f)) * 20;
-    if(mainMixer) mainMixer.SetFloat("MusicVol", dbValue);
-
-    // 2. Grafik Ayarı (Aynı kalıyor)
-    QualitySettings.SetQualityLevel(quality);
-
-    // --- YENİ EKLENEN KISIM: HASSASİYET ---
-    
-    // Sahne içinde aktif olan MouseLook scriptini bulmaya çalış
-    // (FindFirstObjectByType Unity 2023 ve sonrası için, eski sürümse FindObjectOfType kullan)
-    MouseLook playerScript = FindFirstObjectByType<MouseLook>();
-
-    // Eğer oyun sahnesindeysek (playerScript varsa) hassasiyeti anlık güncelle
-    if (playerScript != null)
     {
-        playerScript.mouseSensitivity = sens;
-    }
-    
-    // Eğer Ana Menüdeysek playerScript 'null' döner, kod hata vermez, sadece çalışmaz.
-    // Bu tam istediğimiz şey çünkü menüde dönecek karakter yok.
-}
+        // 1. Ses
+        // Not: AudioMixer kullanmıyorsan burayı silebilirsin veya AudioListener.volume = vol; yapabilirsin.
+        float dbValue = Mathf.Log10(Mathf.Max(vol, 0.0001f)) * 20;
+        if (mainMixer) mainMixer.SetFloat("MusicVol", dbValue);
 
-    // Buton rengini değiştiren fonksiyon
+        // 2. Grafik Kalitesi (0: Düşük, 1: Orta, 2: Yüksek)
+        QualitySettings.SetQualityLevel(quality);
+
+        // 3. Hassasiyet (Global değişkene yaz)
+        GlobalSensitivity = sens;
+    }
+
+    // Buton Renk Değişimi
     private void UpdateSaveButtonColor(bool isSaved)
     {
         Image btnImage = saveButton.GetComponent<Image>();
