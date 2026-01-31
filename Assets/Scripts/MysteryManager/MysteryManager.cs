@@ -6,8 +6,8 @@ public class MysteryManager : MonoBehaviour
     [System.Serializable]
     public class Supheli
     {
-        public string isim;
-        public NpcDialogue npcScripti;
+        public string isim; // Örn: "Kovboy"
+        public NpcDialogue npcScripti; // Sahnedeki NPC
         [TextArea] public string ipucuTanimi; // Örn: "kırmızı bir atkısı"
     }
 
@@ -19,93 +19,62 @@ public class MysteryManager : MonoBehaviour
     [Range(0f, 1f)] public float katilinIftiraIhtimali = 0.5f; // %50 ihtimalle suç atsın
 
     // --- 1. GÖRGÜ TANIKLARI (DOĞRU İPUCU VERENLER) ---
-    // {0} = Katilin ipucunu (kıyafeti/özelliği) buraya koyar.
     private string[] masumSablonlari = new string[] 
     {
-        // Temkinli Olanlar
         "Tam emin değilim ama sanki üzerinde {0} vardı.",
         "Göz ucuyla baktığımda {0} olduğunu fark ettim.",
         "Karanlıktı ama {0} parlıyordu sanki.",
         "Yüzünü saklıyordu ama {0} olduğunu net gördüm.",
-        
-        // Korkmuş Olanlar
         "Çok korkunçtu! Tek hatırladığım {0} olduğu.",
         "Titremekten zor konuşuyorum... Sanırım {0} vardı.",
         "Lütfen beni karıştırma, sadece {0} gördüğümü söyleyebilirim.",
-        "O an donup kaldım, ama kaçan kişinin {0} aklımda kalmış.",
-
-        // Emin Olanlar / İspiyoncular
         "Olay yerinden kaçan kişinin {0} dikkatimi çekti.",
         "Polis bey, kaçan kişinin kesinlikle {0} vardı.",
         "Katili arıyorsan {0} olan kişiye dikkat et.",
         "Şu {0} olan tip var ya, bence aradığın kişi o.",
         "İnanamıyorum, az önce {0} olan biri buradan koşarak geçti!",
-        "Bahse girerim ki suçlu o! Hani şu {0} olan.",
-        
-        // Gizemli Olanlar
         "Her şey çok hızlı gelişti... Yine de {0} gözüme çarptı.",
-        "Buralarda {0} olan birini gördün mü? O çok şüpheliydi.",
-        "Rüzgar esince fark ettim, {0} taşıyordu.",
-        "Sessizce geçti ama {0} hışırtısını duydum diyebilirim."
+        "Buralarda {0} olan birini gördün mü? O çok şüpheliydi."
     };
 
     // --- 2. HİÇBİR ŞEY GÖRMEYENLER (BOŞ YAPANLAR) ---
     private string[] bosSablonlar = new string[]
     {
-        // İlgisizler
         "Ben o sırada telefona bakıyordum, hiçbir şey görmedim.",
         "Ben buraların yabancısıyım, kim kimdir tanımam.",
         "Kulaklığım takılıydı, dünyadan haberim yok.",
         "Ayakkabımı bağlıyordum, kafamı kaldırdığımda herkes kaçmıştı.",
-        
-        // Göremeyenler / Mazeret Üretenler
         "Çok karanlıktı, kimseyi seçemedim maalesef.",
         "Gözlüklerimi evde unutmuşum, her şey bulanıktı.",
         "Kalabalıkta kimseyi seçemedim, üzgünüm.",
         "Olay olduğunda arkam dönüktü.",
-        "Güneş gözümü aldı, net bir şey diyemem.",
-        
-        // Panik / Korkak
         "Korkudan gözlerimi kapattım, hiçbir şey hatırlamıyorum.",
         "Bana soru sorma! Başımın belaya girmesini istemiyorum.",
-        "Bir çığlık duydum ve hemen masanın altına saklandım.",
-        "Ben hiçbir şeye karışmam, beni rahat bırak.",
-        "Şoktayım şu an, hafızam bomboş."
+        "Ben hiçbir şeye karışmam, beni rahat bırak."
     };
 
     // --- 3. KATİLİN SAVUNMALARI (SUÇU REDDEDENLER) ---
     private string[] katilSavunmalari = new string[] 
     {
-        // Sakin Yalanlar
         "Ben bütün gün buradaydım memur bey, hiçbir şey görmedim.",
         "Benim olayla bir ilgim yok, sadece işimi yapıyorum.",
         "Burada bir sürü insan var, neden benimle uğraşıyorsun?",
         "Yanlış kişiye soruyorsun, ben sadece bekliyorum.",
-        
-        // Sinirli / Tersleyen Yalanlar
         "Neden bana öyle bakıyorsun? Ben masumum!",
         "Beni suçlamaya mı çalışıyorsun? Hadi oradan!",
         "İşine bak dedektif, benden sana ekmek çıkmaz.",
-        "Sabrımı taşırıyorsun, ben yapmadım dedim!",
-        
-        // Şaşkın Yalanlar
         "Katil mi? Ne katili? Ben sadece hava almaya çıkmıştım.",
         "Hiçbir şey bilmiyorum, lütfen beni rahat bırak.",
-        "Ben mi? Şaka yapıyor olmalısın.",
         "Ben karıncayı bile incitemem!"
     };
 
     // --- 4. KATİLİN İFTİRALARI (BAŞKASINI SUÇLAYANLAR) ---
-    // {0} = Günah keçisinin (masumun) özelliği
     private string[] katilIftiralari = new string[]
     {
-        // Doğrudan Hedef Gösterenler
         "Ben yapmadım! Ama koşarak kaçan kişinin {0} vardı!",
         "Olayı şu {0} olan tipin yaptığını söylüyorlar.",
         "Yemin ederim ben değilim, {0} olan kişiden şüpheleniyorum.",
         "Ben masumum ama az önce {0} olan biri buradan geçti.",
-        
-        // Sinsi Yalanlar
         "Aradığın kişi ben değilim, {0} taşıyan kişiye bakmalısın.",
         "Kendi gözlerimle gördüm, {0} olan kişi çok garipti.",
         "Bence zaman kaybediyorsun, git {0} olanı sorgula.",
@@ -144,6 +113,11 @@ public class MysteryManager : MonoBehaviour
             Supheli suankiKisi = tumSupheliler[i];
             
             if (suankiKisi.npcScripti == null) continue;
+
+            // --- İSİM GÖNDERME KISMI ---
+            // Bu satırın çalışması için NpcDialogue scriptinde "public string npcAdi;" olmalı!
+            suankiKisi.npcScripti.npcAdi = suankiKisi.isim; 
+            // ---------------------------
 
             // --- KATİLSE ---
             if (i == katilIndex)

@@ -3,12 +3,23 @@ using UnityEngine;
 public class PlayerInteract : MonoBehaviour
 {
     public float interactionDistance = 3f;
-    private NpcDialogue suAnKonusulanNpc; // Kimi dinliyoruz?
+    
+    // Şu an konuştuğumuz kişiyi hafızada tutalım
+    private NpcDialogue suankiNpc; 
 
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.E))
         {
+            // DURUM 1: Zaten biriyle konuşuyorsak, konuşmayı bitir (Toggle Kapat)
+            if (suankiNpc != null && suankiNpc.dialoguePanel.activeSelf)
+            {
+                suankiNpc.EtkilesimYap(); // Kapatır
+                suankiNpc = null; // Hafızayı temizle
+                return; // Aşağıdaki koda inme, işlemi bitir
+            }
+
+            // DURUM 2: Kimseyle konuşmuyorsak, önümüzdekine bak (Raycast)
             Ray ray = new Ray(transform.position, transform.forward);
             RaycastHit hit;
 
@@ -17,19 +28,20 @@ public class PlayerInteract : MonoBehaviour
                 NpcDialogue npc = hit.collider.GetComponent<NpcDialogue>();
                 if (npc != null)
                 {
-                    suAnKonusulanNpc = npc; // Hafızaya al
-                    npc.EtkilesimYap();
+                    suankiNpc = npc; // Bu kişiyi hafızaya al
+                    npc.EtkilesimYap(); // Konuşmayı başlat
                 }
             }
         }
     }
 
-    // BUTONA TIKLAYINCA BU FONKSİYONU ÇAĞIRACAĞIZ
+    // Buton için kullanılan fonksiyon
     public void EkrandakiKisiyiSucla()
     {
-        if (suAnKonusulanNpc != null)
+        if (suankiNpc != null)
         {
-            suAnKonusulanNpc.BuKisiyiSucla();
+            suankiNpc.BuKisiyiSucla();
+            suankiNpc = null; // Suçlayınca ilişkiyi kes
         }
     }
 }
