@@ -1,69 +1,100 @@
 using UnityEngine;
-using UnityEngine.SceneManagement; // YENİ: Sahne değiştirmek için bu kütüphane şart!
+using UnityEngine.SceneManagement;
 
 public class PauseManager : MonoBehaviour
 {
-    [Header("Ayarlar Paneli")]
-    public GameObject settingsPanel; // Prefab'tan gelen panelimiz
-    public SettingsManager settingsManagerScript; 
+    [Header("Paneller")]
+    public GameObject pauseMenuPanel;
+    public GameObject settingsPanel;
+
+    [Header("Script Referansları")]
+    public SettingsManager settingsManagerScript;
+    
+    // YENİ: Karakterin kamerasını kontrol eden scripti buraya alacağız
+    [Header("Karakter Kontrolü")]
+    public MouseLook mouseLookScript; 
 
     [Header("Sahne Ayarları")]
-    public string anaMenuSahneIsmi = "AnaMenu"; // Buraya Ana Menü sahnennin tam adını yazacaksın!
+    public string anaMenuSahneIsmi = "AnaMenu";
 
-    [Header("Oyun Durumu")]
     public static bool isGamePaused = false;
 
     void Update()
     {
-        // ESC tuşuna basınca
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             if (isGamePaused)
-            {
                 ResumeGame();
-            }
             else
-            {
                 PauseGame();
-            }
         }
     }
 
     public void PauseGame()
     {
-        settingsPanel.SetActive(true);
-        
-        // Ayarları yükle ki en son halleri görünsün
-        if(settingsManagerScript != null) 
-            settingsManagerScript.LoadCurrentSettings();
+        // 1. Panelleri ayarla
+        settingsPanel.SetActive(false);
+        pauseMenuPanel.SetActive(true);
 
-        Time.timeScale = 0f; // Zamanı durdur
+        // 2. Zamanı durdur
+        Time.timeScale = 0f;
         isGamePaused = true;
 
-        Cursor.lockState = CursorLockMode.None; // Fareyi serbest bırak
-        Cursor.visible = true;
+        // 3. FAREYİ SERBEST BIRAK VE GÖSTER
+        Cursor.lockState = CursorLockMode.None; // Kilidi kaldır
+        Cursor.visible = true;                  // Görünür yap
+
+        // 4. KAMERA DÖNMESİNİ ENGELLE (Çok Önemli!)
+        if (mouseLookScript != null)
+        {
+            mouseLookScript.enabled = false; // Scripti tamamen durdurur
+        }
     }
 
     public void ResumeGame()
     {
+        // 1. Panelleri kapat
+        pauseMenuPanel.SetActive(false);
         settingsPanel.SetActive(false);
 
-        Time.timeScale = 1f; // Zamanı devam ettir
-        isGamePaused = false;
-
-        Cursor.lockState = CursorLockMode.Locked; // Fareyi kilitle
-        Cursor.visible = false;
-    }
-
-    // --- YENİ EKLENEN FONKSİYON ---
-    public void AnaMenuyeDon()
-    {
-        // 1. Çok Önemli: Sahne değişmeden önce zamanı normale döndür.
-        // Yoksa Ana Menüye geçtiğinde oyun hala donuk kalır.
+        // 2. Zamanı devam ettir
         Time.timeScale = 1f;
         isGamePaused = false;
 
-        // 2. Ana Menü sahnesini yükle
+        // 3. FAREYİ KİLİTLE VE GİZLE
+        Cursor.lockState = CursorLockMode.Locked; // Ortaya kilitle
+        Cursor.visible = false;                   // Gizle
+
+        // 4. KAMERA DÖNMESİNİ TEKRAR AÇ
+        if (mouseLookScript != null)
+        {
+            mouseLookScript.enabled = true; // Script tekrar çalışsın
+        }
+    }
+
+    // --- DİĞER FONKSİYONLAR (Aynı kalacak) ---
+    public void OpenSettings()
+    {
+        pauseMenuPanel.SetActive(false);
+        settingsPanel.SetActive(true);
+        if (settingsManagerScript != null) settingsManagerScript.LoadCurrentSettings();
+    }
+
+    public void CloseSettingsAndReturnToPause()
+    {
+        settingsPanel.SetActive(false);
+        pauseMenuPanel.SetActive(true);
+    }
+
+    public void LoadMainMenu()
+    {
+        Time.timeScale = 1f;
+        isGamePaused = false;
         SceneManager.LoadScene(anaMenuSahneIsmi);
+    }
+
+    public void QuitGame()
+    {
+        Application.Quit();
     }
 }
